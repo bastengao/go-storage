@@ -36,11 +36,11 @@ func WithS3ContentType(ctx context.Context, contentType string) context.Context 
 	return context.WithValue(ctx, CtxS3ContentType, contentType)
 }
 
-func s3ACLFromContext(ctx context.Context) types.ObjectCannedACL {
+func s3ACLFromContext(ctx context.Context) *types.ObjectCannedACL {
 	if v, ok := ctx.Value(CtxS3ACL).(types.ObjectCannedACL); ok {
-		return v
+		return &v
 	}
-	return types.ObjectCannedACLPrivate
+	return nil
 }
 
 func contentTypeFromContext(ctx context.Context) string {
@@ -48,6 +48,11 @@ func contentTypeFromContext(ctx context.Context) string {
 		return v
 	}
 	return ""
+}
+
+type S3Options struct {
+	// upload or copy ACL
+	ACL *types.ObjectCannedACL
 }
 
 var _ Service = (*s3Service)(nil)
@@ -58,12 +63,20 @@ type s3Service struct {
 	downloader *manager.Downloader
 	bucket     string
 	endpoint   string
+	acl        types.ObjectCannedACL
 }
 
-func NewS3(cfg aws.Config, bucket string, endpoint string) (Service, error) {
+func NewS3(cfg aws.Config, bucket string, endpoint string, options ...S3Options) (Service, error) {
 	_, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
+	}
+
+	acl := types.ObjectCannedACLPrivate
+	for _, opt := range options {
+		if opt.ACL != nil {
+			acl = *opt.ACL
+		}
 	}
 
 	svc := s3.NewFromConfig(cfg)
@@ -73,6 +86,7 @@ func NewS3(cfg aws.Config, bucket string, endpoint string) (Service, error) {
 		downloader: manager.NewDownloader(svc),
 		bucket:     bucket,
 		endpoint:   endpoint,
+		acl:        acl,
 	}, nil
 }
 
@@ -87,7 +101,10 @@ func (s *s3Service) Upload(ctx context.Context, key string, reader io.Reader) er
 	}
 	// TODO: detect content type from content
 
-	acl := s3ACLFromContext(ctx)
+	acl := s.acl
+	if ctxACL := s3ACLFromContext(ctx); ctxACL != nil {
+		acl = *ctxACL
+	}
 
 	_, err := s.uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket:       aws.String(s.bucket),
@@ -127,7 +144,10 @@ func (s *s3Service) Copy(ctx context.Context, src string, dst string) error {
 		contentType = ct
 	}
 
-	acl := s3ACLFromContext(ctx)
+	acl := s.acl
+	if ctxACL := s3ACLFromContext(ctx); ctxACL != nil {
+		acl = *ctxACL
+	}
 
 	_, err := s.svc.CopyObject(context.TODO(), &s3.CopyObjectInput{
 		Bucket:            aws.String(s.bucket),

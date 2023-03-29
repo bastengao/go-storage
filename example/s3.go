@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/bastengao/go-storage"
 )
 
@@ -17,12 +18,22 @@ func exampleS3() {
 		log.Fatal(err)
 	}
 
-	service, err := storage.NewS3(cfg, "bucket", "https://bucket.us-east-1.s3.amazonaws.com")
+	defaultACL := types.ObjectCannedACLPublicRead
+	service, err := storage.NewS3(
+		cfg,
+		"bucket",
+		"https://bucket.us-east-1.s3.amazonaws.com",
+		storage.S3Options{
+			ACL: &defaultACL,
+		},
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = service.Upload(context.TODO(), "test/abc.txt", bytes.NewReader([]byte("hello world")))
+	// custom ACL
+	ctx := storage.WithS3Private(context.TODO())
+	err = service.Upload(ctx, "test/abc.txt", bytes.NewReader([]byte("hello world")))
 	if err != nil {
 		log.Fatal(err)
 	}
