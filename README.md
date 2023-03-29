@@ -11,7 +11,7 @@ Inspired by ActiveStorage from Rails.
 
 ## TODO
 
-* [*] Public URL
+* [x] Public URL
 * [ ] Private URL
 
 ## Usage
@@ -20,12 +20,12 @@ Use `Service` to manipulate files.
 
 ```go
 import (
-	"bytes"
-	"context"
-	"log"
+  "bytes"
+  "context"
+  "log"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/bastengao/go-storage"
+  "github.com/aws/aws-sdk-go-v2/config"
+  "github.com/bastengao/go-storage"
 )
 
 cfg, err := config.LoadDefaultConfig(context.TODO())
