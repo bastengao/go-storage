@@ -8,13 +8,14 @@ Inspired by ActiveStorage from Rails.
 
 * [x] Disk
 * [x] AWS S3
-* [ ] Google Cloud Storage
+* [x] Google Cloud Storage
 * [ ] MicroSoft Azure Storage
 
 ## TODO
 
 * [x] Public URL
-* [ ] Private URL
+* [ ] Private URL (Signed URL)
+* [ ] Direct upload URL
 
 ## Documentation
 

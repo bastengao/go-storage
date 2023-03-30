@@ -18,7 +18,6 @@ func (NullService) Upload(ctx context.Context, key string, reader io.Reader) err
 }
 
 func (NullService) Download(ctx context.Context, key string) (io.ReadCloser, error) {
-	// TODO
 	return nil, nil
 }
 
@@ -26,7 +25,7 @@ func (NullService) Copy(ctx context.Context, src string, dst string) error {
 	return nil
 }
 
-func (NullService) Delete(ctx context.Context, prefix string) error {
+func (NullService) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
@@ -34,7 +33,7 @@ func (NullService) DeleteBatch(ctx context.Context, keys []string) error {
 	return nil
 }
 
-func (NullService) DeletePrefixed(ctx context.Context, key string) error {
+func (NullService) DeletePrefixed(ctx context.Context, prefix string) error {
 	return nil
 }
 
