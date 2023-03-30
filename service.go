@@ -10,8 +10,8 @@ type Service interface {
 	Download(ctx context.Context, key string) (io.ReadCloser, error)
 	Copy(ctx context.Context, src string, dst string) error
 	Delete(ctx context.Context, key string) error
-	DeleteBatch(keys []string) error
-	DeletePrefixed(prefix string) error
-	Exist(key string) (bool, error)
+	DeleteBatch(ctx context.Context, keys []string) error
+	DeletePrefixed(ctx context.Context, prefix string) error
+	Exist(ctx context.Context, key string) (bool, error)
 	URL(key string) string
 }

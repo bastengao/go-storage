@@ -38,7 +38,7 @@ func NewVariant(service Service, originKey string, options VariantOptions, trans
 // Process processes the variant and upload it to the storage if not exists.
 func (v variant) Process() error {
 	// skip if already exists
-	exist, err := v.service.Exist(v.Key())
+	exist, err := v.service.Exist(context.TODO(), v.Key())
 	if err != nil {
 		return err
 	}

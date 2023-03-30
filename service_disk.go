@@ -89,7 +89,7 @@ func (d *disk) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (d *disk) DeleteBatch(keys []string) error {
+func (d *disk) DeleteBatch(ctx context.Context, keys []string) error {
 	for _, key := range keys {
 		err := d.Delete(context.TODO(), key)
 		if err != nil {
@@ -100,7 +100,7 @@ func (d *disk) DeleteBatch(keys []string) error {
 	return nil
 }
 
-func (d *disk) DeletePrefixed(prefix string) error {
+func (d *disk) DeletePrefixed(ctx context.Context, prefix string) error {
 	root := os.DirFS(d.dir)
 	matches, err := fs.Glob(root, fmt.Sprintf("%s*", prefix))
 	if err != nil {
@@ -118,7 +118,7 @@ func (d *disk) DeletePrefixed(prefix string) error {
 	return nil
 }
 
-func (d *disk) Exist(key string) (bool, error) {
+func (d *disk) Exist(ctx context.Context, key string) (bool, error) {
 	_, err := os.Stat(d.pathFor(key))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

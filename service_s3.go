@@ -182,7 +182,7 @@ func (s *s3Service) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (s *s3Service) DeleteBatch(keys []string) error {
+func (s *s3Service) DeleteBatch(ctx context.Context, keys []string) error {
 	objects := make([]types.ObjectIdentifier, len(keys))
 	for i, key := range keys {
 		objects[i] = types.ObjectIdentifier{Key: aws.String(key)}
@@ -200,7 +200,7 @@ func (s *s3Service) DeleteBatch(keys []string) error {
 	return nil
 }
 
-func (s *s3Service) DeletePrefixed(prefix string) error {
+func (s *s3Service) DeletePrefixed(ctx context.Context, prefix string) error {
 	p := s3.NewListObjectsV2Paginator(s.svc, &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.bucket),
 		Prefix: aws.String(prefix),
@@ -234,7 +234,7 @@ func (s *s3Service) DeletePrefixed(prefix string) error {
 	return nil
 }
 
-func (s *s3Service) Exist(key string) (bool, error) {
+func (s *s3Service) Exist(ctx context.Context, key string) (bool, error) {
 	_, err := s.svc.HeadObject(context.TODO(), &s3.HeadObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),

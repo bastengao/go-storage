@@ -30,15 +30,15 @@ func (NullService) Delete(ctx context.Context, prefix string) error {
 	return nil
 }
 
-func (NullService) DeleteBatch(keys []string) error {
+func (NullService) DeleteBatch(ctx context.Context, keys []string) error {
 	return nil
 }
 
-func (NullService) DeletePrefixed(key string) error {
+func (NullService) DeletePrefixed(ctx context.Context, key string) error {
 	return nil
 }
 
-func (NullService) Exist(key string) (bool, error) {
+func (NullService) Exist(ctx context.Context, key string) (bool, error) {
 	return false, nil
 }
 
