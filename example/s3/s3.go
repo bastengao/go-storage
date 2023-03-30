@@ -12,7 +12,7 @@ import (
 	"github.com/bastengao/go-storage"
 )
 
-func exampleS3() {
+func main() {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatal(err)
@@ -33,7 +33,7 @@ func exampleS3() {
 
 	// custom ACL
 	ctx := storage.WithS3Private(context.TODO())
-	storage.WithS3ContentType(ctx, "text/plain")
+	ctx = storage.WithS3ContentType(ctx, "text/plain")
 	err = service.Upload(ctx, "test/abc.txt", bytes.NewReader([]byte("hello world")))
 	if err != nil {
 		log.Fatal(err)
@@ -43,7 +43,7 @@ func exampleS3() {
 		log.Fatal(err)
 	}
 
-	store = storage.New(service, nil)
+	store := storage.New(service, nil)
 
 	// transform image to 100x100 jpeg with quality 75
 	options := storage.VariantOptions{}.
