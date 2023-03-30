@@ -1,5 +1,7 @@
 # storage
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/bastengao/go-storage.svg)](https://pkg.go.dev/github.com/bastengao/go-storage)
+
 Inspired by ActiveStorage from Rails.
 
 ## Service
@@ -13,6 +15,10 @@ Inspired by ActiveStorage from Rails.
 
 * [x] Public URL
 * [ ] Private URL
+
+## Documentation
+
+* [Service AWS S3](service_s3.md)
 
 ## Usage
 

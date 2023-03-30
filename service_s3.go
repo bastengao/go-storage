@@ -51,7 +51,7 @@ func contentTypeFromContext(ctx context.Context) string {
 }
 
 type S3Options struct {
-	// upload or copy ACL
+	// config upload or copy ACL. Default is private
 	ACL *types.ObjectCannedACL
 }
 

@@ -33,6 +33,7 @@ func exampleS3() {
 
 	// custom ACL
 	ctx := storage.WithS3Private(context.TODO())
+	storage.WithS3ContentType(ctx, "text/plain")
 	err = service.Upload(ctx, "test/abc.txt", bytes.NewReader([]byte("hello world")))
 	if err != nil {
 		log.Fatal(err)
