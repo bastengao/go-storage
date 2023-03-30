@@ -13,6 +13,8 @@ import (
 
 func TestS3Upload(t *testing.T) {
 	// TODO: use mock
+	t.Skip()
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithClientLogMode(aws.LogRetries|aws.LogRequest|aws.LogResponse))
 	require.NoError(t, err)
 
@@ -26,9 +28,9 @@ func TestS3Upload(t *testing.T) {
 
 func TestS3ACLFromContext(t *testing.T) {
 	acl := s3ACLFromContext(context.TODO())
-	require.Equal(t, types.ObjectCannedACLPrivate, acl)
+	require.Nil(t, acl)
 
 	ctx := WithS3PublicRead(context.TODO())
 	acl = s3ACLFromContext(ctx)
-	require.Equal(t, types.ObjectCannedACLPublicRead, acl)
+	require.Equal(t, types.ObjectCannedACLPublicRead, *acl)
 }

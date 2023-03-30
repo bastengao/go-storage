@@ -21,21 +21,21 @@ func NewTransformer() Transformer {
 }
 
 func (defaultTransformer) Transform(ctx context.Context, options VariantOptions, format string, source io.Reader, writer io.Writer) error {
-	img, err := DecodeImg(source)
+	img, err := decodeImg(source)
 	if err != nil {
 		return pkgerr.WithStack(err)
 	}
 
 	size := options.Size()
 	if size != 0 {
-		img = CropResize(img, int(size))
+		img = cropResize(img, int(size))
 	}
 
 	dimension, ok := options.ResizeToFill()
 	if ok {
 		width := dimension[0]
 		height := dimension[1]
-		img = CropResize2(img, width, height)
+		img = cropResize2(img, width, height)
 	}
 
 	// TODO: support webp
@@ -47,12 +47,12 @@ func (defaultTransformer) Transform(ctx context.Context, options VariantOptions,
 	return nil
 }
 
-func DecodeImg(r io.Reader) (image.Image, error) {
+func decodeImg(r io.Reader) (image.Image, error) {
 	return imaging.Decode(r, imaging.AutoOrientation(true))
 }
 
-// CropCenter crop center
-func CropCenter(img image.Image) image.Image {
+// cropCenter crop center
+func cropCenter(img image.Image) image.Image {
 	width, height := imageDim(img)
 
 	// crop to square
@@ -60,16 +60,16 @@ func CropCenter(img image.Image) image.Image {
 	return imaging.CropCenter(img, minSize, minSize)
 }
 
-// CropResize crop center and resize to square
-func CropResize(img image.Image, size int) image.Image {
-	out := CropCenter(img)
+// cropResize crop center and resize to square
+func cropResize(img image.Image, size int) image.Image {
+	out := cropCenter(img)
 
 	// resize
 	return imaging.Resize(out, size, size, imaging.Lanczos)
 }
 
-// CropResize2 crop center and resize to specified size
-func CropResize2(img image.Image, width int, height int) image.Image {
+// cropResize2 crop center and resize to specified size
+func cropResize2(img image.Image, width int, height int) image.Image {
 	originWidth, originHeight := imageDim(img)
 
 	widthRatio := float64(originWidth) / float64(width)
