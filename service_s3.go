@@ -24,14 +24,17 @@ const (
 	CtxS3ContentType contextKey = "s3_contentType"
 )
 
+// WithS3PublicRead set s3 object acl to public-read for upload and copy.
 func WithS3PublicRead(ctx context.Context) context.Context {
 	return context.WithValue(ctx, CtxS3ACL, types.ObjectCannedACLPublicRead)
 }
 
+// WithS3Private set s3 object acl to private for upload and copy.
 func WithS3Private(ctx context.Context) context.Context {
 	return context.WithValue(ctx, CtxS3ACL, types.ObjectCannedACLPrivate)
 }
 
+// WithS3ContentType set s3 object content-type for upload and copy.
 func WithS3ContentType(ctx context.Context, contentType string) context.Context {
 	return context.WithValue(ctx, CtxS3ContentType, contentType)
 }

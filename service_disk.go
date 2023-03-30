@@ -20,6 +20,8 @@ type disk struct {
 	endpoint string
 }
 
+// NewDiskService creates a new disk service.
+// dir is the directory to store the files.
 func NewDiskService(dir string, endpoint string) (Service, error) {
 	_, err := url.Parse(endpoint)
 	if err != nil {

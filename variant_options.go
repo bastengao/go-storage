@@ -30,6 +30,8 @@ func (o VariantOptions) Size() int {
 	return s
 }
 
+// SetSize sets the size of the variant.
+// Cut the image to a square from the center and resize it to the given size.
 func (o VariantOptions) SetSize(size int) VariantOptions {
 	o["size"] = size
 	return o
@@ -40,6 +42,8 @@ func (o VariantOptions) ResizeToFill() ([2]int, bool) {
 	return v, ok
 }
 
+// SetResizeToFill sets the with and height of the variant.
+// Cut the image to a rectangle from the center and resize it to the given size.
 func (o VariantOptions) SetResizeToFill(size [2]int) VariantOptions {
 	o["resize_to_fill"] = size
 	return o
@@ -50,6 +54,7 @@ func (o VariantOptions) Format() string {
 	return f
 }
 
+// SetFormat sets the format of the variant. Must be one of "jpg", "png".
 func (o VariantOptions) SetFormat(format string) VariantOptions {
 	o["format"] = format
 	return o
@@ -60,6 +65,7 @@ func (o VariantOptions) Quality() int {
 	return q
 }
 
+// SetQuality sets the quality of the variant. Must be between 1 and 100. Default is 80.
 func (o VariantOptions) SetQuality(quality int) VariantOptions {
 	o["quality"] = quality
 	return o

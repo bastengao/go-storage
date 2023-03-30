@@ -36,6 +36,9 @@ type storageServer struct {
 	keyDecoder func(string) string
 }
 
+// NewServer creates a new server. keyEncoder and keyDecoder are optional.
+//
+// Default key will keep unchanged in query, such as "key=sample.jpg". keyEncoder and keyDecoder can be used to encode/decode key.
 func NewServer(endpoint string, storage Storage, keyEncoder func(string) string, keyDecoder func(string) string) Server {
 	return storageServer{
 		endpoint:   endpoint,
@@ -78,6 +81,7 @@ func (s storageServer) Handler() http.Handler {
 	})
 }
 
+// URL returns the URL of the variant serving by this server.
 func (s storageServer) URL(key string, options VariantOptions) string {
 	u, err := url.Parse(s.endpoint)
 	if err != nil {

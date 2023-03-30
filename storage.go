@@ -11,6 +11,7 @@ type storage struct {
 	variantFactory VariantFactory
 }
 
+// New creates a new storage. If variantFactory is nil, NewVariantFactory(NewTransformer()) will be used.
 func New(service Service, variantFactory VariantFactory) Storage {
 	if variantFactory == nil {
 		variantFactory = NewVariantFactory(NewTransformer())
