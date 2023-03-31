@@ -115,7 +115,19 @@ func (s *gcsService) Copy(ctx context.Context, src string, dst string) error {
 
 	copier := dstObj.CopierFrom(srcObj)
 	_, err := copier.Run(ctx)
-	return err
+	if err != nil {
+		return err
+	}
+
+	acl := gcsACLFromContext(ctx)
+	for _, rule := range acl {
+		err = dstObj.ACL().Set(ctx, rule.entity, rule.role)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *gcsService) Delete(ctx context.Context, key string) error {
