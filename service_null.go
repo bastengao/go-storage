@@ -2,7 +2,10 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"io"
+	"net/http"
+	"time"
 )
 
 var _ Service = (*NullService)(nil)
@@ -43,4 +46,8 @@ func (NullService) Exist(ctx context.Context, key string) (bool, error) {
 
 func (NullService) URL(key string) string {
 	return ""
+}
+
+func (NullService) SignURL(ctx context.Context, key string, method string, expiresIn time.Duration) (string, http.Header, error) {
+	return "", nil, errors.New("not supported")
 }

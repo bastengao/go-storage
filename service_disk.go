@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
 
 	pkgerr "github.com/pkg/errors"
 )
@@ -132,6 +134,10 @@ func (d *disk) Exist(ctx context.Context, key string) (bool, error) {
 
 func (d *disk) URL(key string) string {
 	return URL(d.endpoint, key)
+}
+
+func (d *disk) SignURL(ctx context.Context, key string, method string, expiresIn time.Duration) (string, http.Header, error) {
+	return "", nil, errors.New("not supported")
 }
 
 func (d *disk) pathFor(key string) string {

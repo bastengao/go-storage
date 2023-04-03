@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 	"io"
+	"net/http"
+	"time"
 )
 
 type Service interface {
@@ -14,4 +16,8 @@ type Service interface {
 	DeletePrefixed(ctx context.Context, prefix string) error
 	Exist(ctx context.Context, key string) (bool, error)
 	URL(key string) string
+	// SignURL returns a signed URL for the given key.
+	//
+	// method must be one of "GET", "PUT", "HEAD", "DELETE".
+	SignURL(ctx context.Context, key string, method string, expiresIn time.Duration) (string, http.Header, error)
 }

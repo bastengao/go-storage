@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
+	"time"
 
 	gstorage "cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
@@ -191,4 +193,8 @@ func (s *gcsService) Exist(ctx context.Context, key string) (bool, error) {
 
 func (s *gcsService) URL(key string) string {
 	return URL(s.endpoint, key)
+}
+
+func (s *gcsService) SignURL(ctx context.Context, key string, method string, expiresIn time.Duration) (string, http.Header, error) {
+	return "", nil, errors.New("not supported")
 }

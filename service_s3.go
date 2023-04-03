@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"path"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -256,4 +258,53 @@ func (s *s3Service) Exist(ctx context.Context, key string) (bool, error) {
 
 func (s *s3Service) URL(key string) string {
 	return URL(s.endpoint, key)
+}
+
+func (s *s3Service) SignURL(ctx context.Context, key string, method string, expiresIn time.Duration) (string, http.Header, error) {
+	presignedClient := s3.NewPresignClient(s.svc)
+	var optFns []func(*s3.PresignOptions)
+	if expiresIn != 0 {
+		optFns = append(optFns, s3.WithPresignExpires(expiresIn))
+	}
+
+	switch method {
+	case http.MethodGet:
+		req, err := presignedClient.PresignGetObject(ctx, &s3.GetObjectInput{
+			Bucket: aws.String(s.bucket),
+			Key:    aws.String(key),
+		}, optFns...)
+		if err != nil {
+			return "", nil, err
+		}
+		return req.URL, req.SignedHeader, nil
+	case http.MethodPut:
+		req, err := presignedClient.PresignPutObject(ctx, &s3.PutObjectInput{
+			Bucket: aws.String(s.bucket),
+			Key:    aws.String(key),
+		}, optFns...)
+		if err != nil {
+			return "", nil, err
+		}
+		return req.URL, req.SignedHeader, nil
+	case http.MethodHead:
+		req, err := presignedClient.PresignHeadObject(ctx, &s3.HeadObjectInput{
+			Bucket: aws.String(s.bucket),
+			Key:    aws.String(key),
+		}, optFns...)
+		if err != nil {
+			return "", nil, err
+		}
+		return req.URL, req.SignedHeader, nil
+	case http.MethodDelete:
+		req, err := presignedClient.PresignDeleteObject(ctx, &s3.DeleteObjectInput{
+			Bucket: aws.String(s.bucket),
+			Key:    aws.String(key),
+		}, optFns...)
+		if err != nil {
+			return "", nil, err
+		}
+		return req.URL, req.SignedHeader, nil
+	}
+
+	return "", nil, errors.New("not supported")
 }
