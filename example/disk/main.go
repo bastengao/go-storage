@@ -18,7 +18,7 @@ func main() {
 
 	store = storage.New(service, nil)
 
-	server := storage.NewServer("http://localhost:8080/storage/redirect", store, nil, nil)
+	server := storage.NewServer("http://localhost:8080/storage/redirect", store)
 
 	http.Handle("/disk/", storage.ServeDisk("/disk/", dirPath))
 	http.Handle("/storage/redirect", server.Handler())

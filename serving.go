@@ -29,22 +29,43 @@ func RedirectURL(endpoint string, key string, options VariantOptions) string {
 	return u.String()
 }
 
+type ServerOptions struct {
+	KeyEncoder func(key string) string
+	KeyDecoder func(encodedKey string) string
+	// URLResolver is used to resolve the URL of the variant or origin file.
+	// Default will use Service.URL(key) method
+	URLResolver func(key string) string
+}
+
+type ServerOption func(o *ServerOptions)
+
 type storageServer struct {
-	endpoint   string
-	storage    Storage
-	keyEncoder func(string) string
-	keyDecoder func(string) string
+	endpoint    string
+	storage     Storage
+	keyEncoder  func(string) string
+	keyDecoder  func(string) string
+	urlResolver func(string) string
 }
 
 // NewServer creates a new server. keyEncoder and keyDecoder are optional.
 //
 // Default key will keep unchanged in query, such as "key=sample.jpg". keyEncoder and keyDecoder can be used to encode/decode key.
-func NewServer(endpoint string, storage Storage, keyEncoder func(string) string, keyDecoder func(string) string) Server {
+func NewServer(endpoint string, storage Storage, options ...ServerOption) Server {
+	opts := &ServerOptions{
+		URLResolver: func(key string) string {
+			return storage.Service().URL(key)
+		},
+	}
+	for _, opt := range options {
+		opt(opts)
+	}
+
 	return storageServer{
-		endpoint:   endpoint,
-		storage:    storage,
-		keyEncoder: keyEncoder,
-		keyDecoder: keyDecoder,
+		endpoint:    endpoint,
+		storage:     storage,
+		keyEncoder:  opts.KeyEncoder,
+		keyDecoder:  opts.KeyDecoder,
+		urlResolver: opts.URLResolver,
 	}
 }
 
@@ -65,7 +86,7 @@ func (s storageServer) Handler() http.Handler {
 
 		// origin file
 		if len(options) == 0 {
-			url := s.storage.Service().URL(key)
+			url := s.urlResolver(key)
 			http.Redirect(w, r, url, http.StatusFound)
 			return
 		}
@@ -77,7 +98,8 @@ func (s storageServer) Handler() http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, variant.URL(), http.StatusFound)
+		url := s.urlResolver(variant.Key())
+		http.Redirect(w, r, url, http.StatusFound)
 	})
 }
 

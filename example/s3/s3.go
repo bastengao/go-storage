@@ -59,7 +59,7 @@ func main() {
 	// variants/sample-9c1aec99c27e6c66d895519f9ef831da.jpeg
 	_ = key
 
-	server := storage.NewServer("http://127.0.0.1:8080/storage/redirect", store, nil, nil)
+	server := storage.NewServer("http://127.0.0.1:8080/storage/redirect", store)
 	url := server.URL("sample.jpg", nil)
 	// http://127.0.0.1:8080/storage/redirect?key=sample.jpg
 	variantURL := server.URL("sample.jpg", options)
