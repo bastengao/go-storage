@@ -111,7 +111,7 @@ func (s *s3Service) Upload(ctx context.Context, key string, reader io.Reader) er
 		acl = *ctxACL
 	}
 
-	_, err := s.uploader.Upload(context.TODO(), &s3.PutObjectInput{
+	_, err := s.uploader.Upload(ctx, &s3.PutObjectInput{
 		Bucket:       aws.String(s.bucket),
 		Key:          aws.String(key),
 		ACL:          acl,
@@ -125,7 +125,7 @@ func (s *s3Service) Upload(ctx context.Context, key string, reader io.Reader) er
 func (s *s3Service) Download(ctx context.Context, key string) (io.ReadCloser, error) {
 	var buf manager.WriteAtBuffer
 	_, err := s.downloader.Download(
-		context.TODO(),
+		ctx,
 		&buf,
 		&s3.GetObjectInput{
 			Bucket: aws.String(s.bucket),
@@ -154,7 +154,7 @@ func (s *s3Service) Copy(ctx context.Context, src string, dst string) error {
 		acl = *ctxACL
 	}
 
-	_, err := s.svc.CopyObject(context.TODO(), &s3.CopyObjectInput{
+	_, err := s.svc.CopyObject(ctx, &s3.CopyObjectInput{
 		Bucket:            aws.String(s.bucket),
 		Key:               aws.String(dst),
 		ACL:               acl,
@@ -167,7 +167,7 @@ func (s *s3Service) Copy(ctx context.Context, src string, dst string) error {
 }
 
 func (s *s3Service) Delete(ctx context.Context, key string) error {
-	_, err := s.svc.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+	_, err := s.svc.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
@@ -189,7 +189,7 @@ func (s *s3Service) DeleteBatch(ctx context.Context, keys []string) error {
 	for i, key := range keys {
 		objects[i] = types.ObjectIdentifier{Key: aws.String(key)}
 	}
-	_, err := s.svc.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+	_, err := s.svc.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 		Bucket: aws.String(s.bucket),
 		Delete: &types.Delete{
 			Objects: objects,
@@ -209,7 +209,7 @@ func (s *s3Service) DeletePrefixed(ctx context.Context, prefix string) error {
 	})
 
 	for p.HasMorePages() {
-		page, err := p.NextPage(context.TODO())
+		page, err := p.NextPage(ctx)
 		if err != nil {
 			return pkgerr.WithStack(err)
 		}
@@ -222,7 +222,7 @@ func (s *s3Service) DeletePrefixed(ctx context.Context, prefix string) error {
 		for i, obj := range page.Contents {
 			keys[i] = types.ObjectIdentifier{Key: obj.Key}
 		}
-		_, err = s.svc.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+		_, err = s.svc.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: aws.String(s.bucket),
 			Delete: &types.Delete{
 				Objects: keys,
@@ -237,7 +237,7 @@ func (s *s3Service) DeletePrefixed(ctx context.Context, prefix string) error {
 }
 
 func (s *s3Service) Exist(ctx context.Context, key string) (bool, error) {
-	_, err := s.svc.HeadObject(context.TODO(), &s3.HeadObjectInput{
+	_, err := s.svc.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
