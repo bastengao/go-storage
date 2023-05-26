@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -51,8 +52,9 @@ func ParseVariantOptions(query url.Values) (VariantOptions, error) {
 	return options, nil
 }
 
-func (o VariantOptions) Set(key string, value any) {
+func (o VariantOptions) Set(key string, value any) VariantOptions {
 	o[key] = value
+	return o
 }
 
 func (o VariantOptions) Get(key string) any {
@@ -124,6 +126,8 @@ func (o VariantOptions) URLQuery() map[string]string {
 			query[k] = o.Format()
 		case "quality":
 			query[k] = strconv.Itoa(o.Quality())
+		default:
+			query[k] = fmt.Sprintf("%v", o.Get(k))
 		}
 	}
 	return query
