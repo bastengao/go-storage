@@ -99,7 +99,7 @@ func (v variant) format() string {
 		format = imaging.JPEG
 	}
 
-	return format.String()
+	return strings.ToLower(format.String())
 }
 
 func (v variant) digest() string {
