@@ -1,8 +1,10 @@
 package storage
 
 import (
+	"errors"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 type VariantOptions map[string]any
@@ -13,16 +15,48 @@ func ParseVariantOptions(query url.Values) (VariantOptions, error) {
 	for k, v := range query {
 		switch k {
 		case "size":
-			size, err := strconv.Atoi(v[0])
+			size, err := strconv.Atoi(query.Get(k))
 			if err != nil {
 				return nil, err
 			}
 			options.SetSize(size)
+		case "resize_to_fill":
+			sizes := strings.Split(query.Get(k), "x")
+			if len(sizes) != 2 {
+				return nil, errors.New("invalid resize_to_fill")
+			}
+
+			w, err := strconv.Atoi(sizes[0])
+			if err != nil {
+				return nil, err
+			}
+			h, err := strconv.Atoi(sizes[1])
+			if err != nil {
+				return nil, err
+			}
+			options.SetResizeToFill([2]int{w, h})
+		case "format":
+			options.SetFormat(query.Get(k))
+		case "quality":
+			quality, err := strconv.Atoi(query.Get(k))
+			if err != nil {
+				return nil, err
+			}
+			options.SetQuality(quality)
+		default:
+			options.Set(k, v)
 		}
-		// TODO
 	}
 
 	return options, nil
+}
+
+func (o VariantOptions) Set(key string, value any) {
+	o[key] = value
+}
+
+func (o VariantOptions) Get(key string) any {
+	return o[key]
 }
 
 func (o VariantOptions) Size() int {
