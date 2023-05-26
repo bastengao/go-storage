@@ -96,7 +96,11 @@ func (s storageServer) Handler() http.Handler {
 			}
 		}
 
-		options, err := ParseVariantOptions(r.URL.Query())
+		strippedQuery := r.URL.Query()
+		strippedQuery.Del("key")
+		strippedQuery.Del("signature")
+		strippedQuery.Del("expires")
+		options, err := ParseVariantOptions(strippedQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(err.Error()))
