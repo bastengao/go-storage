@@ -3,6 +3,7 @@ package storage
 import (
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type Server interface {
@@ -35,16 +36,22 @@ type ServerOptions struct {
 	// URLResolver is used to resolve the URL of the variant or origin file.
 	// Default will use Service.URL(key) method
 	URLResolver func(key string) string
+	// Will sign serving URL to prevent somebody to change serving URL
+	SigningKey []byte
+	// Expire duration for signed serving URL
+	SigningExpires time.Duration
 }
 
 type ServerOption func(o *ServerOptions)
 
 type storageServer struct {
-	endpoint    string
-	storage     Storage
-	keyEncoder  func(string) string
-	keyDecoder  func(string) string
-	urlResolver func(string) string
+	endpoint       string
+	storage        Storage
+	keyEncoder     func(string) string
+	keyDecoder     func(string) string
+	urlResolver    func(string) string
+	urlSigner      URLSigner
+	signingExpires time.Duration
 }
 
 // NewServer creates a new server. keyEncoder and keyDecoder are optional.
@@ -60,20 +67,39 @@ func NewServer(endpoint string, storage Storage, options ...ServerOption) Server
 		opt(opts)
 	}
 
+	var urlSigner URLSigner
+	if opts.SigningKey != nil {
+		urlSigner = NewHmacURLSigner(opts.SigningKey)
+	}
+
 	return storageServer{
-		endpoint:    endpoint,
-		storage:     storage,
-		keyEncoder:  opts.KeyEncoder,
-		keyDecoder:  opts.KeyDecoder,
-		urlResolver: opts.URLResolver,
+		endpoint:       endpoint,
+		storage:        storage,
+		keyEncoder:     opts.KeyEncoder,
+		keyDecoder:     opts.KeyDecoder,
+		urlResolver:    opts.URLResolver,
+		urlSigner:      urlSigner,
+		signingExpires: opts.SigningExpires,
 	}
 }
 
 func (s storageServer) Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s.urlSigner != nil {
+			// NOTE: only path and RawQuery of URL are set
+			fullURL := s.endpoint + "?" + r.URL.RawQuery
+			err := s.urlSigner.Validate(fullURL)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				_, _ = w.Write([]byte(err.Error()))
+				return
+			}
+		}
+
 		options, err := ParseVariantOptions(r.URL.Query())
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
 
@@ -96,6 +122,7 @@ func (s storageServer) Handler() http.Handler {
 		err = variant.Process()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
 		url := s.urlResolver(variant.Key())
@@ -120,7 +147,15 @@ func (s storageServer) URL(key string, options VariantOptions) string {
 	}
 
 	u.RawQuery = query.Encode()
-	return u.String()
+	if s.urlSigner == nil {
+		return u.String()
+	}
+
+	signedURL, err := s.urlSigner.Sign(u.String(), s.signingExpires)
+	if err != nil {
+		return ""
+	}
+	return signedURL
 }
 
 func (s storageServer) encodeKey(key string) string {
