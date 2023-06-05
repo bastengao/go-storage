@@ -6,11 +6,30 @@ import (
 	"time"
 )
 
-type Server interface {
-	Handler() http.Handler
-	URL(key string, options VariantOptions) string
+type URLOptions struct {
+	expires *time.Duration
 }
 
+type URLOption func(o *URLOptions)
+
+func (o URLOption) Apply(options *URLOptions) {
+	o(options)
+}
+
+// WithURLExpires sets the expires of the serving URL. 0 means never expires.
+func WithURLExpires(expires time.Duration) URLOption {
+	return func(o *URLOptions) {
+		o.expires = &expires
+	}
+}
+
+type Server interface {
+	Handler() http.Handler
+	URL(key string, options VariantOptions, urlOptions ...URLOption) string
+}
+
+// RedirectURL returns serving URL of the variant.
+// Deprecated: out of date.
 func RedirectURL(endpoint string, key string, options VariantOptions) string {
 	u, err := url.Parse(endpoint)
 	if err != nil {
@@ -135,7 +154,12 @@ func (s storageServer) Handler() http.Handler {
 }
 
 // URL returns the URL of the variant serving by this server.
-func (s storageServer) URL(key string, options VariantOptions) string {
+func (s storageServer) URL(key string, options VariantOptions, urlOpts ...URLOption) string {
+	var urlOptions URLOptions
+	for _, opt := range urlOpts {
+		opt.Apply(&urlOptions)
+	}
+
 	u, err := url.Parse(s.endpoint)
 	if err != nil {
 		return ""
@@ -155,7 +179,11 @@ func (s storageServer) URL(key string, options VariantOptions) string {
 		return u.String()
 	}
 
-	signedURL, err := s.urlSigner.Sign(u.String(), s.signingExpires)
+	expires := s.signingExpires
+	if urlOptions.expires != nil {
+		expires = *urlOptions.expires
+	}
+	signedURL, err := s.urlSigner.Sign(u.String(), expires)
 	if err != nil {
 		return ""
 	}
